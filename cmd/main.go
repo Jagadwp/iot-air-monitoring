@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"iot-air-monitoring/web"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -93,10 +94,11 @@ func Sensor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Kirim data terbaru dan semua data historis ke HTML
+	// Kirim data terbaru, semua data historis, dan waktu halaman di-refresh ke HTML
 	data := map[string]any{
-		"Latest":   latest,
-		"Readings": readings,
+		"Latest":      latest,
+		"Readings":    readings,
+		"RefreshedAt": time.Now().Format("2006-01-02 15:04:05"),
 	}
 
 	err = tmpl.ExecuteTemplate(w, "base", data)
