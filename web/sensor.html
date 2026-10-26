@@ -1,0 +1,105 @@
+{{ define "title" }}
+Sensor
+{{ end }}
+
+{{ define "content" }}
+<!-- Halaman otomatis refresh setiap 5 detik -->
+<meta http-equiv="refresh" content="5">
+
+<h1>Dashboard Sensor</h1>
+<p>Device {{ .Latest.DeviceID }} &middot; Update terakhir: {{ .Latest.Timestamp }}</p>
+
+<!-- Nilai terbaru -->
+<div class="cards">
+    <div class="card">
+        <div class="label">Suhu</div>
+        <div class="value">{{ .Latest.Temperature }} &deg;C</div>
+    </div>
+    <div class="card">
+        <div class="label">Tekanan</div>
+        <div class="value">{{ .Latest.Pressure }} hPa</div>
+    </div>
+    <div class="card">
+        <div class="label">Lokasi</div>
+        <div class="value small">{{ .Latest.Lat }}, {{ .Latest.Long }}</div>
+    </div>
+    <div class="card">
+        <div class="label">Kualitas Udara</div>
+        <!-- Kriteria sementara: suhu di atas 30 dianggap kurang baik -->
+        {{ if gt .Latest.Temperature 30.0 }}
+        <div class="value bad">Kurang Baik</div>
+        {{ else }}
+        <div class="value good">Bersih</div>
+        {{ end }}
+    </div>
+</div>
+
+<!-- Data historis -->
+<h2>Riwayat Data</h2>
+<table>
+    <tr>
+        <th>Waktu</th>
+        <th>Device</th>
+        <th>Suhu (&deg;C)</th>
+        <th>Tekanan (hPa)</th>
+        <th>Lat</th>
+        <th>Long</th>
+    </tr>
+    {{ range .Readings }}
+    <tr>
+        <td>{{ .Timestamp }}</td>
+        <td>{{ .DeviceID }}</td>
+        <td>{{ .Temperature }}</td>
+        <td>{{ .Pressure }}</td>
+        <td>{{ .Lat }}</td>
+        <td>{{ .Long }}</td>
+    </tr>
+    {{ end }}
+</table>
+
+<style>
+    .cards { 
+        display: flex; 
+        gap: 16px; 
+        flex-wrap: wrap; 
+        margin-bottom: 28px; 
+    }
+    .card { 
+        flex: 1; 
+        min-width: 180px; 
+        padding: 16px; 
+        border: 1px solid #e5e7eb; 
+        border-radius: 8px; 
+    }
+    .label { 
+        color: #6b7280; 
+        font-size: 14px; 
+    }
+    .value { 
+        font-size: 28px; 
+        font-weight: bold; 
+        margin-top: 6px; 
+    }
+    .small { 
+        font-size: 18px; 
+    }
+    .good { 
+        color: #16a34a; 
+    }
+    .bad { 
+        color: #dc2626; 
+    }
+    table { 
+        width: 100%; 
+        border-collapse: collapse; 
+    }
+    th, td { 
+        padding: 10px; 
+        border-bottom: 1px solid #e5e7eb; 
+        text-align: left; 
+    }
+    th { 
+        background-color: #f9fafb; 
+    }
+</style>
+{{ end }}
