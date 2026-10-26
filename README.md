@@ -22,3 +22,7 @@ Alur: IoT device → `POST /api/sensor-data` → Go → MySQL → dashboard `/se
 ```bash
 curl -X POST localhost:8080/api/sensor-data -d '{"device_id":101,"lat":-6.9147,"long":107.6098,"temperature":28.5,"pressure":1010.2}'
 ```
+
+## Preview dashboard (in-progress)
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/3da38029-f59e-4fb0-b76f-180f2fc26643" />
+
