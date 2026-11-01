@@ -1,9 +1,83 @@
-{{define "content"}}
-<h1>Home</h1>
-
-<p>Welcome to my website.</p>
-{{end}}
-
-{{define "title"}}
+{{ define "title" }}
 Home
-{{end}}
+{{ end }}
+
+{{ define "content" }}
+<style>
+    /* Wadah langkah-langkah: kotak disusun ke samping */
+    .step-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin: 16px 0 28px;
+    }
+
+    /* Satu kotak langkah */
+    .step-box {
+        flex: 1;
+        min-width: 180px;
+        padding: 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+    }
+
+    /* Nomor langkah, contoh: "1" */
+    .step-number {
+        color: #2563eb;
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    /* Tombol biru menuju dashboard */
+    .button {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 6px;
+        background-color: #2563eb;
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+    }
+</style>
+
+<h1>IoT Air Monitoring</h1>
+<p>
+    Website ini menampilkan data kualitas udara yang dikirim oleh perangkat IoT.
+    Data diperbarui otomatis setiap 5 detik.
+</p>
+
+<h2>Cara Kerja</h2>
+<div class="step-list">
+    <div class="step-box">
+        <div class="step-number">1</div>
+        <p>Perangkat IoT membaca suhu, tekanan, dan lokasi.</p>
+    </div>
+
+    <div class="step-box">
+        <div class="step-number">2</div>
+        <p>Perangkat mengirim data ke server Go.</p>
+    </div>
+
+    <div class="step-box">
+        <div class="step-number">3</div>
+        <p>Server Go menyimpan data ke database MySQL.</p>
+    </div>
+
+    <div class="step-box">
+        <div class="step-number">4</div>
+        <p>Dashboard menampilkan data terbaru dan grafiknya.</p>
+    </div>
+</div>
+
+<h2>Data yang Dipantau</h2>
+<ul>
+    <li><b>Suhu</b> dalam derajat Celsius (&deg;C)</li>
+    <li><b>Tekanan udara</b> dalam hektopascal (hPa)</li>
+    <li><b>Lokasi</b> perangkat (latitude dan longitude)</li>
+    <li><b>Kualitas udara</b>: Bersih atau Kurang Baik</li>
+</ul>
+
+<p>
+    <a class="button" href="/sensor">Buka Dashboard Sensor</a>
+</p>
+{{ end }}

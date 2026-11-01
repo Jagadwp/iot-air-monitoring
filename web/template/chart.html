@@ -1,0 +1,196 @@
+{{ define "chart" }}
+<!--
+    Partial: contoh beberapa tipe grafik (line, bar, scatter, doughnut).
+    Dipanggil dari sensor.html dengan: template "chart" .
+    Tanda titik di akhir artinya "kirim semua data halaman ke partial ini",
+    jadi di sini kita bisa memakai .Readings seperti di sensor.html.
+-->
+
+<!-- Library Chart.js untuk menggambar grafik, diambil dari internet (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<div class="chart-list">
+    <div class="chart-box">
+        <h3>Grafik Suhu (&deg;C)</h3>
+        <canvas id="temperatureChart"></canvas>
+    </div>
+    <div class="chart-box">
+        <h3>Grafik Tekanan (hPa)</h3>
+        <canvas id="pressureChart"></canvas>
+    </div>
+</div>
+
+<div class="chart-list">
+    <div class="chart-box">
+        <h3>Suhu per Waktu (Batang)</h3>
+        <canvas id="temperatureBarChart"></canvas>
+    </div>
+    <div class="chart-box">
+        <h3>Suhu vs Tekanan</h3>
+        <canvas id="temperaturePressureChart"></canvas>
+    </div>
+    <div class="chart-box chart-box-small">
+        <h3>Ringkasan Kualitas Udara</h3>
+        <canvas id="airQualityChart"></canvas>
+    </div>
+</div>
+
+<script>
+    // Go mengisi daftar waktu dan nilai sensor dari .Readings
+    // Hasilnya nanti seperti: ["2026-10-26 20:05:00", "2026-10-26 20:04:00", ...]
+    const timeLabels = [
+        {{ range .Readings }}
+            {{ .Timestamp }},
+        {{ end }}
+    ];
+
+    // Hasilnya nanti seperti: [31.2, 30.4, 29.6, ...]
+    const temperatureValues = [
+        {{ range .Readings }}
+            {{ .Temperature }},
+        {{ end }}
+    ];
+
+    const pressureValues = [
+        {{ range .Readings }}
+            {{ .Pressure }},
+        {{ end }}
+    ];
+
+    // Pengaturan yang sama untuk grafik yang sumbu bawahnya waktu (line dan bar)
+    const chartOptions = {
+        // Matikan animasi, karena halaman reload setiap 5 detik
+        animation: false,
+        scales: {
+            x: {
+                // Data dari Go urut dari yang terbaru.
+                // Sumbu waktu dibalik supaya data lama di kiri dan data baru di kanan.
+                reverse: true
+            }
+        }
+    };
+
+    // Grafik suhu
+    const temperatureCanvas = document.getElementById("temperatureChart");
+    new Chart(temperatureCanvas, {
+        type: "line",
+        data: {
+            labels: timeLabels,
+            datasets: [
+                {
+                    label: "Suhu (°C)",
+                    data: temperatureValues,
+                    borderColor: "#dc2626"
+                }
+            ]
+        },
+        options: chartOptions
+    });
+
+    // Grafik tekanan
+    const pressureCanvas = document.getElementById("pressureChart");
+    new Chart(pressureCanvas, {
+        type: "line",
+        data: {
+            labels: timeLabels,
+            datasets: [
+                {
+                    label: "Tekanan (hPa)",
+                    data: pressureValues,
+                    borderColor: "#2563eb"
+                }
+            ]
+        },
+        options: chartOptions
+    });
+
+    // Grafik batang suhu
+    // Bedanya dengan grafik garis: type "bar", dan warnanya memakai backgroundColor (warna isi batang)
+    const temperatureBarCanvas = document.getElementById("temperatureBarChart");
+    new Chart(temperatureBarCanvas, {
+        type: "bar",
+        data: {
+            labels: timeLabels,
+            datasets: [
+                {
+                    label: "Suhu (°C)",
+                    data: temperatureValues,
+                    backgroundColor: "#f97316"
+                }
+            ]
+        },
+        options: chartOptions
+    });
+
+    // Setiap titik berisi pasangan tekanan (x) dan suhu (y)
+    // Hasilnya nanti seperti: [{ x: 1009.8, y: 31.2 }, { x: 1010.1, y: 30.4 }, ...]
+    const temperaturePressurePoints = [
+        {{ range .Readings }}
+            { x: {{ .Pressure }}, y: {{ .Temperature }} },
+        {{ end }}
+    ];
+
+    // Grafik titik suhu vs tekanan
+    // Tidak memakai labels, karena posisi setiap titik sudah ditentukan oleh x dan y
+    const temperaturePressureCanvas = document.getElementById("temperaturePressureChart");
+    new Chart(temperaturePressureCanvas, {
+        type: "scatter",
+        data: {
+            datasets: [
+                {
+                    label: "Data sensor",
+                    data: temperaturePressurePoints,
+                    backgroundColor: "#7c3aed"
+                }
+            ]
+        },
+        options: {
+            animation: false,
+            scales: {
+                x: {
+                    title: { display: true, text: "Tekanan (hPa)" }
+                },
+                y: {
+                    title: { display: true, text: "Suhu (°C)" }
+                }
+            }
+        }
+    });
+    console.log(temperaturePressurePoints)
+
+    // Hitung jumlah data Bersih dan Kurang Baik satu per satu
+    // Kriteria sama dengan kartu: suhu di atas 30 dianggap Kurang Baik
+    let cleanAirCount = 0;
+    let badAirCount = 0;
+
+    for (let index = 0; index < temperatureValues.length; index = index + 1) {
+        const temperature = temperatureValues[index];
+
+        if (temperature > 30) {
+            badAirCount = badAirCount + 1;
+        } else {
+            cleanAirCount = cleanAirCount + 1;
+        }
+    }
+
+    // Grafik donat kualitas udara
+    // Urutan warna di backgroundColor mengikuti urutan labels
+    // Ganti type "doughnut" menjadi "pie" untuk pie chart biasa (tanpa lubang di tengah)
+    const airQualityCanvas = document.getElementById("airQualityChart");
+    new Chart(airQualityCanvas, {
+        type: "doughnut",
+        data: {
+            labels: ["Bersih", "Kurang Baik"],
+            datasets: [
+                {
+                    data: [cleanAirCount, badAirCount],
+                    backgroundColor: ["#16a34a", "#dc2626"]
+                }
+            ]
+        },
+        options: {
+            animation: false
+        }
+    });
+</script>
+{{ end }}

@@ -39,6 +39,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFS(
 		web.Files,
 		"template/base.html",
+		"template/navbar.html",
 		"home.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -88,6 +89,8 @@ func Sensor(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFS(
 		web.Files,
 		"template/base.html",
+		"template/navbar.html",
+		"template/chart.html",
 		"sensor.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

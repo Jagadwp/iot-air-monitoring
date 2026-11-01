@@ -6,33 +6,130 @@ Sensor
 <!-- Halaman otomatis refresh setiap 5 detik -->
 <meta http-equiv="refresh" content="5">
 
+<style>
+    /* Wadah kartu: kartu disusun ke samping, dan turun ke bawah kalau layar sempit */
+    .card-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    /* Satu kartu */
+    .card {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 0%;
+        min-width: 180px;
+        padding: 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+    }
+
+    /* Tulisan kecil abu-abu di atas kartu, contoh: "Suhu" */
+    .card-label {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    /* Angka besar di dalam kartu, contoh: "31.2 °C" */
+    .card-value {
+        margin-top: 6px;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    /* Versi lebih kecil untuk teks yang panjang, contoh: koordinat lokasi */
+    .card-value-small {
+        font-size: 18px;
+    }
+
+    /* Warna status kualitas udara */
+    .status-good {
+        color: #16a34a;
+    }
+
+    .status-bad {
+        color: #dc2626;
+    }
+
+    /* Wadah grafik: dua grafik disusun ke samping */
+    .chart-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    /* Satu grafik */
+    .chart-box {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 0%;
+        min-width: 300px;
+        padding: 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+    }
+
+    /* Grafik bulat (doughnut) dibatasi lebarnya, supaya tidak terlalu besar di layar lebar */
+    .chart-box-small {
+        max-width: 360px;
+    }
+
+    /* Tabel riwayat data */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 10px;
+        border-bottom: 1px solid #e5e7eb;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f9fafb;
+    }
+</style>
+
 <h1>Dashboard Sensor</h1>
 <p>Device {{ .Latest.DeviceID }} &middot; Update terakhir: {{ .RefreshedAt }}</p>
 
 <!-- Nilai terbaru -->
-<div class="cards">
+<div class="card-list">
     <div class="card">
-        <div class="label">Suhu</div>
-        <div class="value">{{ .Latest.Temperature }} &deg;C</div>
+        <div class="card-label">Suhu</div>
+        <div class="card-value">{{ .Latest.Temperature }} &deg;C</div>
     </div>
+
     <div class="card">
-        <div class="label">Tekanan</div>
-        <div class="value">{{ .Latest.Pressure }} hPa</div>
+        <div class="card-label">Tekanan</div>
+        <div class="card-value">{{ .Latest.Pressure }} hPa</div>
     </div>
+
     <div class="card">
-        <div class="label">Lokasi</div>
-        <div class="value small">{{ .Latest.Lat }}, {{ .Latest.Long }}</div>
+        <div class="card-label">Lokasi</div>
+        <div class="card-value card-value-small">{{ .Latest.Lat }}, {{ .Latest.Long }}</div>
     </div>
+
     <div class="card">
-        <div class="label">Kualitas Udara</div>
-        <!-- Kriteria sementara: suhu di atas 30 dianggap kurang baik -->
+        <div class="card-label">Kualitas Udara</div>
+        <!--
+            Kriteria sementara: suhu di atas 30 dianggap kurang baik.
+            "gt" artinya "greater than" (lebih besar dari).
+        -->
         {{ if gt .Latest.Temperature 30.0 }}
-        <div class="value bad">Kurang Baik</div>
+            <div class="card-value status-bad">Kurang Baik</div>
         {{ else }}
-        <div class="value good">Bersih</div>
+            <div class="card-value status-good">Bersih</div>
         {{ end }}
     </div>
 </div>
+
+<!-- Grafik diambil dari partial template/chart.html -->
+{{ template "chart" . }}
 
 <!-- Data historis -->
 <h2>Riwayat Data</h2>
@@ -45,6 +142,8 @@ Sensor
         <th>Lat</th>
         <th>Long</th>
     </tr>
+
+    <!-- Ulangi satu baris tabel untuk setiap data sensor -->
     {{ range .Readings }}
     <tr>
         <td>{{ .Timestamp }}</td>
@@ -56,50 +155,4 @@ Sensor
     </tr>
     {{ end }}
 </table>
-
-<style>
-    .cards { 
-        display: flex; 
-        gap: 16px; 
-        flex-wrap: wrap; 
-        margin-bottom: 28px; 
-    }
-    .card { 
-        flex: 1; 
-        min-width: 180px; 
-        padding: 16px; 
-        border: 1px solid #e5e7eb; 
-        border-radius: 8px; 
-    }
-    .label { 
-        color: #6b7280; 
-        font-size: 14px; 
-    }
-    .value { 
-        font-size: 28px; 
-        font-weight: bold; 
-        margin-top: 6px; 
-    }
-    .small { 
-        font-size: 18px; 
-    }
-    .good { 
-        color: #16a34a; 
-    }
-    .bad { 
-        color: #dc2626; 
-    }
-    table { 
-        width: 100%; 
-        border-collapse: collapse; 
-    }
-    th, td { 
-        padding: 10px; 
-        border-bottom: 1px solid #e5e7eb; 
-        text-align: left; 
-    }
-    th { 
-        background-color: #f9fafb; 
-    }
-</style>
 {{ end }}
