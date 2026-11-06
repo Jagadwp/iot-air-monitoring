@@ -38,6 +38,7 @@ Sensor
 <h2>Riwayat Data</h2>
 <table>
     <tr>
+        <th>No</th>
         <th>Waktu</th>
         <th>Device</th>
         <th>Suhu (&deg;C)</th>
@@ -47,6 +48,7 @@ Sensor
     </tr>
     {{ range .Readings }}
     <tr>
+        <td>{{ .Number }}</td>
         <td>{{ .Timestamp }}</td>
         <td>{{ .DeviceID }}</td>
         <td>{{ .Temperature }}</td>

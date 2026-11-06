@@ -19,6 +19,9 @@ type Reading struct {
 	Long        float64 `json:"long"`
 	Temperature float64 `json:"temperature"`
 	Pressure    float64 `json:"pressure"`
+
+	// Nomor urut untuk tabel di dashboard, tidak dikirim oleh device ("-" artinya diabaikan saat baca JSON)
+	Number int `json:"-"`
 }
 
 func main() {
@@ -27,8 +30,8 @@ func main() {
 	router := chi.NewRouter()
 
 	router.Get("/", Home)
-	router.Get("/home", Home)
-	router.Get("/sensor", Sensor)
+	router.Get("/home", Home)     // displaying home page
+	router.Get("/sensor", Sensor) // displaying sensor page with data
 	router.Post("/api/sensor-data", SaveSensorData)
 
 	fmt.Println("Server started on http://localhost:8080")
@@ -54,30 +57,34 @@ func Home(w http.ResponseWriter, r *http.Request) {
 
 func Sensor(w http.ResponseWriter, r *http.Request) {
 	// Data dummy dulu, nanti diganti dengan SELECT dari MySQL di bawah
-	readings := []Reading{
-		{101, "2026-10-26 20:05:00", -6.9147, 107.6098, 31.2, 1009.8},
-		{101, "2026-10-26 20:04:00", -6.9147, 107.6098, 30.4, 1010.1},
-		{101, "2026-10-26 20:03:00", -6.9147, 107.6098, 29.6, 1010.3},
-		{101, "2026-10-26 20:02:00", -6.9147, 107.6098, 28.9, 1010.6},
-		{101, "2026-10-26 20:01:00", -6.9147, 107.6098, 28.1, 1010.9},
-		{101, "2026-10-26 20:00:00", -6.9147, 107.6098, 27.5, 1011.2},
-	}
+
+	// readings := []Reading{
+	// 	{101, "2026-10-26 20:05:00", -6.9147, 107.6098, 31.2, 1009.8},
+	// 	{101, "2026-10-26 20:04:00", -6.9147, 107.6098, 30.4, 1010.1},
+	// 	{101, "2026-10-26 20:03:00", -6.9147, 107.6098, 29.6, 1010.3},
+	// 	{101, "2026-10-26 20:02:00", -6.9147, 107.6098, 28.9, 1010.6},
+	// 	{101, "2026-10-26 20:01:00", -6.9147, 107.6098, 28.1, 1010.9},
+	// 	{101, "2026-10-26 20:00:00", -6.9147, 107.6098, 27.5, 1011.2},
+	// }
 
 	// Ambil 50 data terbaru dari MySQL (hapus data dummy di atas kalau ini dipakai)
-	// rows, err := DB.Query(
-	// 	"SELECT device_id, created_at, latitude, longitude, temperature, pressure FROM sensor_readings ORDER BY id DESC LIMIT 50")
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// defer rows.Close()
-	//
-	// readings := []Reading{}
-	// for rows.Next() {
-	// 	var reading Reading
-	// 	rows.Scan(&reading.DeviceID, &reading.Timestamp, &reading.Lat, &reading.Long, &reading.Temperature, &reading.Pressure)
-	// 	readings = append(readings, reading)
-	// }
+	rows, err := DB.Query(
+		"SELECT device_id, created_at, latitude, longitude, temperature, pressure FROM sensor_readings ORDER BY id DESC LIMIT 50")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	readings := []Reading{}
+	number := 1
+	for rows.Next() {
+		var reading Reading
+		rows.Scan(&reading.DeviceID, &reading.Timestamp, &reading.Lat, &reading.Long, &reading.Temperature, &reading.Pressure)
+		reading.Number = number
+		readings = append(readings, reading)
+		number = number + 1
+	}
 
 	// Data terbaru ada di baris pertama (kalau tabel masih kosong, pakai nilai 0)
 	latest := Reading{}
